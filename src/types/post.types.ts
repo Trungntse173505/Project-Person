@@ -12,6 +12,7 @@ export interface Post {
   created_at: string;
   updated_at: string;
   categories?: PostCategoryRef | null;
+  related_posts?: Post[];
 }
 
 export interface PostInput {

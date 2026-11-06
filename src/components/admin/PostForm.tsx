@@ -9,6 +9,7 @@ import {
   Save,
   Loader2,
   Bold,
+  Italic,
   Code,
   Quote,
   Heading2,
@@ -23,8 +24,6 @@ type PostFormProps = ReturnType<typeof usePostEditor>;
 export function PostForm({
   title,
   setTitle,
-  slug,
-  setSlug,
   categoryId,
   setCategoryId,
   coverImage,
@@ -46,7 +45,12 @@ export function PostForm({
   textareaRef,
   coverInputRef,
   inlineImageInputRef,
+  floatingMenu,
+  wrapSelection,
+  toggleLinePrefix,
   insertAtCursor,
+  handleEditorMouseUp,
+  handleEditorKeyDown,
   handleCoverUpload,
   handleInlineImageUpload,
   handleSubmit,
@@ -68,35 +72,20 @@ export function PostForm({
         </div>
       )}
 
-      {/* Hàng 1: Tiêu đề & Slug */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Tiêu đề bài viết *
-          </label>
-          <input
-            type="text"
-            required
-            maxLength={255}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nhập tiêu đề bài ghi chú / kiến thức..."
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-base font-medium text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-400"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Đường dẫn (Slug tùy chọn)
-          </label>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="Để trống sẽ tự tạo từ tiêu đề"
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-400"
-          />
-        </div>
+      {/* Tiêu đề bài viết */}
+      <div>
+        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          Tiêu đề bài viết *
+        </label>
+        <input
+          type="text"
+          required
+          maxLength={255}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Nhập tiêu đề bài viết..."
+          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-base font-medium text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
+        />
       </div>
 
       {/* Hàng 2: Danh mục, Trạng thái & Ảnh bìa */}
@@ -108,7 +97,7 @@ export function PostForm({
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+            className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-400 [&>option]:bg-white dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
           >
             <option value="">-- Chưa phân loại --</option>
             {categories.map((cat) => (
@@ -126,7 +115,7 @@ export function PostForm({
           <select
             value={isPublished ? 'published' : 'draft'}
             onChange={(e) => setIsPublished(e.target.value === 'published')}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+            className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-400 [&>option]:bg-white dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
           >
             <option value="published">Công khai (Published)</option>
             <option value="draft">Lưu nháp (Draft)</option>
@@ -143,7 +132,7 @@ export function PostForm({
               value={coverImage}
               onChange={(e) => setCoverImage(e.target.value)}
               placeholder="Dán link hoặc bấm Upload..."
-              className="min-w-0 flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              className="min-w-0 flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
             />
             <input
               ref={coverInputRef}
@@ -202,17 +191,17 @@ export function PostForm({
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Mô tả ngắn gọn nội dung bài viết hiển thị ngoài trang chủ..."
-          className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+          className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
         />
       </div>
 
       {/* Khung soạn thảo Markdown */}
-      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex flex-wrap items-center gap-1">
             <button
               type="button"
-              onClick={() => insertAtCursor('## Tiêu đề mục\n')}
+              onClick={() => toggleLinePrefix('## ')}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
               title="Tiêu đề H2"
             >
@@ -220,15 +209,23 @@ export function PostForm({
             </button>
             <button
               type="button"
-              onClick={() => insertAtCursor('**chữ in đậm**')}
+              onClick={() => wrapSelection('**', '**')}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              title="In đậm"
+              title="In đậm (Bôi đen chữ hoặc Ctrl+B)"
             >
               <Bold className="h-4 w-4" />
             </button>
             <button
               type="button"
-              onClick={() => insertAtCursor('> Ghi chú quan trọng\n')}
+              onClick={() => wrapSelection('*', '*')}
+              className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              title="In nghiêng (Bôi đen chữ hoặc Ctrl+I)"
+            >
+              <Italic className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleLinePrefix('> ')}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
               title="Trích dẫn / Callout"
             >
@@ -236,17 +233,25 @@ export function PostForm({
             </button>
             <button
               type="button"
-              onClick={() => insertAtCursor('\n```javascript\n// Code ví dụ\n```\n')}
+              onClick={() => wrapSelection('`', '`')}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              title="Khối Code"
+              title="Thẻ Code ngắn (Ctrl+`)"
             >
               <Code className="h-4 w-4" />
             </button>
             <button
               type="button"
-              onClick={() => insertAtCursor('[Tiêu đề link](https://)')}
+              onClick={() => insertAtCursor('\n```javascript\n// Code ví dụ\n```\n')}
+              className="rounded-lg px-2 py-1 font-mono text-xs font-semibold text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              title="Khối Code nhiều dòng"
+            >
+              Code block
+            </button>
+            <button
+              type="button"
+              onClick={() => wrapSelection('[', '](https://)', 'tiêu đề link')}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              title="Chèn Link"
+              title="Chèn Link (Ctrl+K)"
             >
               <LinkIcon className="h-4 w-4" />
             </button>
@@ -327,8 +332,10 @@ export function PostForm({
               ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Viết nội dung bài viết bằng cú pháp Markdown... Bấm 'Chèn ảnh vào bài' ở thanh công cụ để tải ảnh lên Cloudinary và chèn link tại vị trí con trỏ."
-              className="min-h-[480px] w-full resize-y bg-transparent p-4 font-mono text-sm leading-relaxed text-zinc-900 focus:outline-none dark:text-zinc-100"
+              onMouseUp={handleEditorMouseUp}
+              onKeyDown={handleEditorKeyDown}
+              placeholder="Viết nội dung bài viết bằng cú pháp Markdown... Bạn có thể bôi đen chữ để xuất hiện thanh công cụ nổi hoặc dùng phím tắt Ctrl+B (in đậm), Ctrl+I (in nghiêng), Ctrl+K (chèn link)."
+              className="min-h-[480px] w-full resize-y bg-transparent p-4 font-mono text-sm leading-relaxed text-zinc-900 placeholder:text-zinc-400 focus:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
           )}
 
@@ -345,6 +352,70 @@ export function PostForm({
           )}
         </div>
       </div>
+
+      {/* Thanh công cụ nổi mini (Floating Bubble Menu kiểu Notion / Medium) */}
+      {floatingMenu.visible && (
+        <div
+          onMouseDown={(e) => e.preventDefault()}
+          style={{ top: `${floatingMenu.y}px`, left: `${floatingMenu.x}px` }}
+          className="floating-bubble-menu fixed z-50 flex -translate-x-1/2 items-center gap-0.5 rounded-xl border border-zinc-700/80 bg-zinc-900/95 p-1 text-white shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150"
+        >
+          <button
+            type="button"
+            onClick={() => wrapSelection('**', '**')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="In đậm (Ctrl+B)"
+          >
+            <Bold className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => wrapSelection('*', '*')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="In nghiêng (Ctrl+I)"
+          >
+            <Italic className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => wrapSelection('`', '`')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="Thẻ Code ngắn (Ctrl+`)"
+          >
+            <Code className="h-3.5 w-3.5" />
+          </button>
+
+          <div className="mx-1 h-3.5 w-px bg-zinc-700" />
+
+          <button
+            type="button"
+            onClick={() => toggleLinePrefix('## ')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="Tiêu đề H2"
+          >
+            <Heading2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleLinePrefix('> ')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="Trích dẫn / Callout"
+          >
+            <Quote className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => wrapSelection('[', '](https://)', 'tiêu đề')}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            title="Chèn link (Ctrl+K)"
+          >
+            <LinkIcon className="h-3.5 w-3.5" />
+          </button>
+
+          {/* Mũi tên tam giác nhỏ chỉ xuống đoạn text */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900/95" />
+        </div>
+      )}
 
       <div className="flex items-center justify-end gap-3 pt-2">
         <button
@@ -363,4 +434,3 @@ export function PostForm({
     </form>
   );
 }
-

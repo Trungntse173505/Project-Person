@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { PenSquare, Search, FileText } from 'lucide-react';
+import { PenSquare, FolderTree, Search, FileText } from 'lucide-react';
 import { useAdminPosts } from '@/hooks/admin/useAdminPosts';
 import { PostTable } from '@/components/admin/PostTable';
 import { Pagination } from '@/components/common/Pagination';
 import { CONFIG } from '@/constants/config';
 
 /**
- * Trang Quản lý bài viết ('use client')
+ * Trang Quản lý bài viết tại Studio ('use client')
  */
-export default function AdminPostsPage() {
+export default function StudioPostsPage() {
   const {
     posts,
     categories,
@@ -22,7 +22,6 @@ export default function AdminPostsPage() {
     setStatusFilter,
     categoryFilter,
     setCategoryFilter,
-    page,
     setPage,
     pagination,
     handleDeletePost,
@@ -31,24 +30,34 @@ export default function AdminPostsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-10 sm:px-6">
-      {/* Header Quản trị */}
+      {/* Header Quản trị Studio */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Quản lý Bài viết
+            Studio — Quản lý Bài viết
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Danh sách bài viết, chuyển đổi trạng thái công khai và quản trị nội dung.
+            Khu vực quản trị xuất bản, chỉnh sửa và quản lý các bài viết trên blog.
           </p>
         </div>
 
-        <Link
-          href={CONFIG.ROUTES.ADMIN_POST_NEW}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          <PenSquare className="h-4 w-4" />
-          <span>Viết bài mới</span>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link
+            href={CONFIG.ROUTES.ADMIN_CATEGORIES}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            <FolderTree className="h-4 w-4" />
+            <span>Quản lý danh mục</span>
+          </Link>
+
+          <Link
+            href={CONFIG.ROUTES.ADMIN_POST_NEW}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            <PenSquare className="h-4 w-4" />
+            <span>Viết bài mới</span>
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -79,7 +88,7 @@ export default function AdminPostsPage() {
                   setPage(1);
                 }}
                 placeholder="Tìm tiêu đề..."
-                className="rounded-xl border border-zinc-200 bg-zinc-50 py-1.5 pr-3 pl-8 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                className="rounded-xl border border-zinc-200 bg-zinc-50 py-1.5 pr-3 pl-8 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:bg-zinc-900"
               />
             </div>
 
@@ -89,7 +98,7 @@ export default function AdminPostsPage() {
                 setStatusFilter(e.target.value as 'published' | 'draft' | '');
                 setPage(1);
               }}
-              className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+              className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-zinc-400 [&>option]:bg-white dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
             >
               <option value="">Tất cả trạng thái</option>
               <option value="published">Đã xuất bản</option>
@@ -102,7 +111,7 @@ export default function AdminPostsPage() {
                 setCategoryFilter(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+              className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-zinc-400 [&>option]:bg-white dark:[&>option]:bg-zinc-900 dark:[&>option]:text-zinc-100"
             >
               <option value="">Tất cả danh mục</option>
               {categories.map((cat) => (

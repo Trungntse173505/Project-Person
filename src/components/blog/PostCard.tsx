@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Calendar, ArrowUpRight, FolderOpen } from 'lucide-react';
 import { Post } from '@/types/post.types';
 import { CONFIG } from '@/constants/config';
+import { optimizeCloudinaryUrl } from '@/utils/image';
 
 interface PostCardProps {
   post: Post;
@@ -31,9 +32,12 @@ export function PostCard({ post }: PostCardProps) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={post.cover_image}
+            src={optimizeCloudinaryUrl(post.cover_image, 600)}
             alt={post.title}
             loading="lazy"
+            decoding="async"
+            width={600}
+            height={338}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         </Link>

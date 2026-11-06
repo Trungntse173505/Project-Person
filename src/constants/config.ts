@@ -1,5 +1,8 @@
+const STUDIO_PREFIX = '/studio';
+
 export const CONFIG = {
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_URL,
   TIMEOUT: 15000,
 
   PAGINATION: {
@@ -36,10 +39,12 @@ export const CONFIG = {
   ROUTES: {
     HOME: '/',
     POST_DETAIL: (slug: string) => `/posts/${slug}`,
-    ADMIN_LOGIN: '/admin/login',
-    ADMIN_POSTS: '/admin/posts',
-    ADMIN_POST_NEW: '/admin/posts/new',
-    ADMIN_POST_EDIT: (id: number | string) => `/admin/posts/${id}/edit`,
+    ADMIN_ROOT: STUDIO_PREFIX,
+    ADMIN_LOGIN: `${STUDIO_PREFIX}/login`,
+    ADMIN_POSTS: `${STUDIO_PREFIX}/posts`,
+    ADMIN_CATEGORIES: `${STUDIO_PREFIX}/categories`,
+    ADMIN_POST_NEW: `${STUDIO_PREFIX}/posts/new`,
+    ADMIN_POST_EDIT: (id: number | string) => `${STUDIO_PREFIX}/posts/${id}/edit`,
   },
 } as const;
 

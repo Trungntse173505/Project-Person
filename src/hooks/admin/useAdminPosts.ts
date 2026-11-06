@@ -17,6 +17,7 @@ export function useAdminPosts() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | ''>('');
@@ -36,46 +37,66 @@ export function useAdminPosts() {
     });
   }, [router]);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const res = await categoryService.getCategories();
-      setCategories(res.data);
-    } catch {
-      setCategories([]);
-    }
+  const refreshPosts = useCallback(() => {
+    setRefreshIndex((prev) => prev + 1);
   }, []);
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await postService.getAdminPosts({
+  // Fetch danh mục bài viết cho bộ lọc
+  useEffect(() => {
+    let ignore = false;
+
+    categoryService
+      .getCategories()
+      .then((res) => {
+        if (!ignore) {
+          setCategories(res.data);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setCategories([]);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [refreshIndex]);
+
+  // Fetch danh sách bài viết theo bộ lọc
+  useEffect(() => {
+    let ignore = false;
+
+    postService
+      .getAdminPosts({
         page,
         limit: CONFIG.PAGINATION.ADMIN_LIMIT,
         status: statusFilter || undefined,
         category_id: categoryFilter ? Number(categoryFilter) : undefined,
         search: search.trim() || undefined,
+      })
+      .then((res) => {
+        if (!ignore) {
+          setPosts(res.data);
+          if (res.pagination) {
+            setPagination(res.pagination);
+          }
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Không thể tải danh sách bài viết.');
+          setPosts([]);
+          setLoading(false);
+        }
       });
 
-      setPosts(res.data);
-      if (res.pagination) {
-        setPagination(res.pagination);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách bài viết.');
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, statusFilter, categoryFilter, search]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    return () => {
+      ignore = true;
+    };
+  }, [page, statusFilter, categoryFilter, search, refreshIndex]);
 
   const handleDeletePost = async (id: number | string, title: string) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa bài viết "${title}"?`)) {
@@ -84,8 +105,7 @@ export function useAdminPosts() {
 
     try {
       await postService.deletePost(id);
-      await fetchPosts();
-      await fetchCategories();
+      refreshPosts();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Lỗi khi xóa bài viết.');
     }
@@ -95,14 +115,13 @@ export function useAdminPosts() {
     try {
       await postService.updatePost(post.id, {
         title: post.title,
-        slug: post.slug,
         content: post.content || '',
         excerpt: post.excerpt || undefined,
         cover_image: post.cover_image,
         category_id: post.category_id,
         is_published: !post.is_published,
       });
-      await fetchPosts();
+      refreshPosts();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Lỗi khi đổi trạng thái bài viết.');
     }
@@ -122,10 +141,8 @@ export function useAdminPosts() {
     page,
     setPage,
     pagination,
-    fetchPosts,
-    fetchCategories,
+    refreshPosts,
     handleDeletePost,
     handleTogglePublished,
   };
 }
-

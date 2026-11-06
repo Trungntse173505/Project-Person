@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, PenSquare, LayoutDashboard, LogOut } from 'lucide-react';
+import { PenSquare, LayoutDashboard, FolderTree, LogOut } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { AdminUser } from '@/types/auth.types';
 import { CONFIG } from '@/constants/config';
@@ -14,10 +14,28 @@ export function Navbar() {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    authService
-      .getMe()
-      .then((res) => setAdmin(res.data))
-      .catch(() => setAdmin(null));
+    // Chỉ kiểm tra danh tính Admin khi có cờ session trong localStorage hoặc đang ở khu vực quản trị /studio
+    const hasAdminSession =
+      typeof window !== 'undefined' &&
+      localStorage.getItem('admin_session') === '1';
+
+    const isStudioRoute = pathname.startsWith(CONFIG.ROUTES.ADMIN_ROOT);
+
+    if (hasAdminSession || isStudioRoute) {
+      authService
+        .getMe()
+        .then((res) => setAdmin(res.data))
+        .catch(() => {
+          setAdmin(null);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.removeItem('admin_session');
+            } catch {
+              // Bỏ qua lỗi
+            }
+          }
+        });
+    }
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -25,7 +43,7 @@ export function Navbar() {
       await authService.logout();
     } finally {
       setAdmin(null);
-      if (pathname.startsWith('/admin')) {
+      if (pathname.startsWith(CONFIG.ROUTES.ADMIN_ROOT)) {
         router.push(CONFIG.ROUTES.HOME);
       }
     }
@@ -36,12 +54,11 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link
           href={CONFIG.ROUTES.HOME}
-          className="flex items-center gap-2.5 text-lg font-semibold tracking-tight text-zinc-900 transition hover:opacity-80 dark:text-zinc-100"
+          className="flex items-center gap-2 transition hover:opacity-85"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-            <BookOpen className="h-4 w-4" />
+          <span className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-100">
+            Blog<span className="text-blue-600 dark:text-blue-500">.</span>
           </span>
-          <span>DevNotes</span>
         </Link>
 
         <nav className="flex items-center gap-2 sm:gap-3">
@@ -62,13 +79,25 @@ export function Navbar() {
               <Link
                 href={CONFIG.ROUTES.ADMIN_POSTS}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                  pathname.startsWith('/admin')
+                  pathname === CONFIG.ROUTES.ADMIN_POSTS
                     ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
                     : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
                 }`}
               >
                 <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden sm:inline">Quản lý bài</span>
+                <span className="hidden sm:inline">Bài viết</span>
+              </Link>
+
+              <Link
+                href={CONFIG.ROUTES.ADMIN_CATEGORIES}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  pathname === CONFIG.ROUTES.ADMIN_CATEGORIES
+                    ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
+                    : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+                }`}
+              >
+                <FolderTree className="h-4 w-4" />
+                <span className="hidden sm:inline">Danh mục</span>
               </Link>
 
               <Link
@@ -94,4 +123,3 @@ export function Navbar() {
     </header>
   );
 }
-

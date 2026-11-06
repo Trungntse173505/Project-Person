@@ -1,16 +1,22 @@
 'use client';
 
+import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { usePostEditor } from '@/hooks/admin/usePostEditor';
 import { PostForm } from '@/components/admin/PostForm';
 import { CONFIG } from '@/constants/config';
 
+interface EditPostPageProps {
+  params: Promise<{ id: string }>;
+}
+
 /**
- * Trang Viết bài mới ('use client')
+ * Trang Sửa bài viết tại Studio ('use client')
  */
-export default function NewPostPage() {
-  const postEditor = usePostEditor();
+export default function StudioEditPostPage({ params }: EditPostPageProps) {
+  const { id } = use(params);
+  const postEditor = usePostEditor({ postId: id });
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -23,7 +29,7 @@ export default function NewPostPage() {
           <span>Quay lại Quản lý bài</span>
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Viết bài ghi chú mới
+          Chỉnh sửa bài viết
         </h1>
       </div>
 
@@ -31,3 +37,4 @@ export default function NewPostPage() {
     </div>
   );
 }
+

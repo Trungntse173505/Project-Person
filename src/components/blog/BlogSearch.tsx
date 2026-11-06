@@ -42,7 +42,7 @@ function BlogSearchInner() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Tìm kiếm bài viết..."
-        className="w-full rounded-full border border-zinc-200 bg-white py-2 pr-9 pl-9 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-400"
+        className="w-full rounded-full border border-zinc-200 bg-white py-2 pr-9 pl-9 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
       />
       {searchTerm && (
         <button
