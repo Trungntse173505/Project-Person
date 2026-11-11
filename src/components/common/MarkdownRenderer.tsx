@@ -177,8 +177,8 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             const rawSrc = typeof src === 'string' ? src : '';
             const optimizedSrc = optimizeCloudinaryUrl(rawSrc, 1000);
             return (
-              <figure className="my-8 overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="relative flex items-center justify-center bg-zinc-100/60 p-1 dark:bg-zinc-900/40">
+              <span className="my-8 block overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+                <span className="relative flex items-center justify-center bg-zinc-100/60 p-1 dark:bg-zinc-900/40">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={optimizedSrc}
@@ -190,13 +190,8 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                     className="mx-auto max-h-[560px] w-auto max-w-full object-contain"
                     style={{ height: 'auto' }}
                   />
-                </div>
-                {alt && (
-                  <figcaption className="border-t border-zinc-200/70 px-4 py-2.5 text-center text-xs italic text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                    {alt}
-                  </figcaption>
-                )}
-              </figure>
+                </span>
+              </span>
             );
           },
           a: ({ href, children }) => (
