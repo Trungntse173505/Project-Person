@@ -1,8 +1,19 @@
 const STUDIO_PREFIX = '/studio';
 
+function normalizeApiUrl(rawUrl?: string): string {
+  if (!rawUrl || !rawUrl.trim()) {
+    return 'http://localhost:5000/api';
+  }
+  let url = rawUrl.trim();
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, '');
+}
+
 export const CONFIG = {
   SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_URL,
+  API_BASE_URL: normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL),
   TIMEOUT: 15000,
 
   PAGINATION: {
