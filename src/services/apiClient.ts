@@ -4,14 +4,25 @@ import { CONFIG } from '@/constants/config';
 export const apiClient: AxiosInstance = axios.create({
   baseURL: CONFIG.API_BASE_URL,
   timeout: CONFIG.TIMEOUT,
-  withCredentials: true, // Gửi và nhận HttpOnly Cookie tự động
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => config,
+  (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const token = localStorage.getItem('admin_token');
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch {
+      }
+    }
+    return config;
+  },
   (error: AxiosError) => Promise.reject(error)
 );
 

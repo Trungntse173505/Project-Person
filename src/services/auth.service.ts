@@ -8,13 +8,15 @@ export const authService = {
     const res = (await apiClient.post(
       CONFIG.API_ENDPOINTS.AUTH.LOGIN,
       credentials
-    )) as unknown as ApiResponse<AdminUser>;
+    )) as unknown as ApiResponse<AdminUser & { token?: string }>;
 
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('admin_session', '1');
+        if (res.data?.token) {
+          localStorage.setItem('admin_token', res.data.token);
+        }
       } catch {
-        // Bỏ qua lỗi nếu localStorage bị chặn
       }
     }
 
@@ -30,8 +32,8 @@ export const authService = {
       if (typeof window !== 'undefined') {
         try {
           localStorage.removeItem('admin_session');
+          localStorage.removeItem('admin_token');
         } catch {
-          // Bỏ qua lỗi
         }
       }
     }
